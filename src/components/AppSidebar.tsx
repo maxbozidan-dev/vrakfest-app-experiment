@@ -93,7 +93,7 @@ export const AppSidebar = memo(({ activeTab, onTabChange }: AppSidebarProps) => 
                           >
                             <div className={`flex items-center gap-4 z-10 relative w-full ${isCollapsed ? 'justify-center' : ''}`}>
                               <item.icon className="h-5 w-5 flex-shrink-0" />
-                              {!isCollapsed && <span className="font-bebas text-xl tracking-wide uppercase pt-0.5">{item.label}</span>}
+                              {!isCollapsed && <span className="font-bebas text-lg md:text-xl tracking-wide uppercase pt-0.5">{item.label}</span>}
                               {!isCollapsed && activeTab === item.id && <div className="ml-auto w-1 h-5 bg-black/20"></div>}
                             </div>
                           </SidebarMenuButton>
@@ -154,7 +154,7 @@ export const AppSidebar = memo(({ activeTab, onTabChange }: AppSidebarProps) => 
                       >
                         <div className={`flex items-center gap-4 z-10 relative w-full ${isCollapsed ? 'justify-center' : ''}`}>
                           <item.icon className="h-5 w-5 flex-shrink-0" />
-                          {!isCollapsed && <span className="font-bebas text-xl tracking-wide uppercase pt-0.5">{item.label}</span>}
+                          {!isCollapsed && <span className="font-bebas text-lg md:text-xl tracking-wide uppercase pt-0.5">{item.label}</span>}
                           {!isCollapsed && activeTab === item.id && <div className="ml-auto w-1 h-5 bg-black/20"></div>}
                         </div>
                       </SidebarMenuButton>

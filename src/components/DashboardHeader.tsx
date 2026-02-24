@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
-import { Bell, User } from 'lucide-react';
-import { SidebarTrigger } from '@/components/ui/sidebar';
+import { Bell, Menu, User } from 'lucide-react';
+import { useSidebar } from '@/components/ui/sidebar';
 import { assetUrl } from '@/lib/assetUrl';
 
 interface DashboardHeaderProps {
@@ -20,13 +20,22 @@ export const DashboardHeader = memo(({
   userRole = 'admin',
   onRoleChange
 }: DashboardHeaderProps) => {
+  const { toggleSidebar } = useSidebar();
+
   return (
-    <header className="h-[72px] md:h-20 flex items-center justify-between px-3 md:px-6 z-50 relative pointer-events-auto">
+    <header className="h-[72px] md:h-20 pt-1 flex items-center justify-between px-3 md:px-6 z-50 relative pointer-events-auto">
       {/* HUD Top Bar Background */}
       <div className="absolute top-0 left-0 right-0 h-full bg-gradient-to-b from-black/80 to-transparent pointer-events-none"></div>
 
       <div className="flex items-center gap-3 md:gap-6 z-10 w-full">
-        <SidebarTrigger className="md:hidden h-9 w-9 border border-racing-yellow/40 bg-black/60 text-racing-yellow hover:bg-racing-yellow hover:text-black" />
+        <button
+          type="button"
+          aria-label="Otevřít menu"
+          onClick={toggleSidebar}
+          className="md:hidden h-9 w-9 text-racing-yellow hover:text-white transition-colors flex items-center justify-center"
+        >
+          <Menu className="h-6 w-6" />
+        </button>
 
         <div className="md:hidden flex-1 flex justify-center">
           <img
@@ -39,9 +48,9 @@ export const DashboardHeader = memo(({
         <button
           type="button"
           aria-label="Notifikace"
-          className="md:hidden relative h-9 w-9 border border-racing-yellow/40 bg-black/60 text-racing-yellow hover:bg-racing-yellow hover:text-black transition-colors flex items-center justify-center"
+          className="md:hidden relative h-9 w-9 text-racing-yellow hover:text-white transition-colors flex items-center justify-center"
         >
-          <Bell className="h-4 w-4" />
+          <Bell className="h-5 w-5" />
           <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-racing-yellow" />
         </button>
 

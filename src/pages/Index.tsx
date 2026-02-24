@@ -345,7 +345,7 @@ const Index = () => {
             currentInfo={tournament.isActive ? "PŘÍŠTÍ ZÁVOD ZA 15 MIN" : "PŘIPRAVUJEME DALŠÍ AKCI"}
           />
 
-          <main className="flex-1 overflow-y-auto p-3 md:p-8 lg:p-10 custom-scrollbar">
+          <main className="flex-1 overflow-y-auto px-3 pb-3 pt-2 md:p-8 lg:p-10 custom-scrollbar">
             <div className="max-w-[1600px] mx-auto pb-20">
               {/* Content Container - Reduced duration and added key for smoother re-triggering of animations */}
               <div

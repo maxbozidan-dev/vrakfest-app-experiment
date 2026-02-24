@@ -14,6 +14,7 @@ export function Events() {
   const { getUpcomingEvents, getPastEvents } = useEvents();
   const { racers } = useRacingTournament();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const FEATURED_EVENT_ID = '2026-1';
 
   const upcomingEvents = getUpcomingEvents();
   const pastEvents = getPastEvents();
@@ -25,6 +26,7 @@ export function Events() {
   };
 
   const handleViewEventDetails = (event: Event) => {
+    if (event.id !== FEATURED_EVENT_ID) return;
     setSelectedEvent(event);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -54,10 +56,13 @@ export function Events() {
     return `${date.getDate()}. ${months[date.getMonth()]} ${date.getFullYear()}`;
   };
 
-  const renderEventCard = (event: Event, isUpcoming: boolean) => (
+  const renderEventCard = (event: Event, isUpcoming: boolean) => {
+    const isDetailed = event.id === FEATURED_EVENT_ID;
+
+    return (
     <div
       key={event.id}
-      className="group relative bg-[#0a0a0a] border border-white/10 overflow-hidden hover:border-racing-yellow/40 transition-all duration-500 cursor-pointer"
+      className={`group relative bg-[#0a0a0a] border border-white/10 overflow-hidden transition-all duration-500 ${isDetailed ? 'hover:border-racing-yellow/40 cursor-pointer' : 'opacity-80 cursor-not-allowed'}`}
       onClick={() => handleViewEventDetails(event)}
     >
       {/* Background Image with Zoom effect */}
@@ -72,15 +77,20 @@ export function Events() {
 
       <div className="relative z-10 p-6 flex flex-col h-full min-h-[300px] justify-end">
         <div className="absolute top-6 right-6">
-          <Badge
-            variant={isUpcoming ? 'secondary' : 'outline'}
-            className={`${isUpcoming
-              ? 'bg-racing-yellow text-black'
-              : 'border-white/20 text-white/60'
-              } font-tech uppercase text-[10px] tracking-widest px-3 py-1`}
-          >
-            {event.status === 'upcoming' ? 'NÁCHÁZEJÍCÍ' : 'UKONČENO'}
-          </Badge>
+          <div className="flex flex-col items-end gap-2">
+            <Badge
+              variant={isUpcoming ? 'secondary' : 'outline'}
+              className={`${isUpcoming
+                ? 'bg-racing-yellow text-black'
+                : 'border-white/20 text-white/60'
+                } font-tech uppercase text-[10px] tracking-widest px-3 py-1`}
+            >
+              {event.status === 'upcoming' ? 'NÁCHÁZEJÍCÍ' : 'UKONČENO'}
+            </Badge>
+            <Badge className={`font-tech uppercase text-[10px] tracking-widest px-3 py-1 ${isDetailed ? 'bg-white text-black' : 'bg-white/10 text-white/60 border border-white/20'}`}>
+              {isDetailed ? 'DETAIL AKTIVNÍ' : 'DETAIL BRZY'}
+            </Badge>
+          </div>
         </div>
 
         <div className="space-y-3">
@@ -115,9 +125,10 @@ export function Events() {
       </div>
 
       {/* Hover visual cue */}
-      <div className="absolute bottom-0 left-0 w-full h-1 bg-racing-yellow transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+      <div className={`absolute bottom-0 left-0 w-full h-1 ${isDetailed ? 'bg-racing-yellow transform scale-x-0 group-hover:scale-x-100' : 'bg-white/20 scale-x-100'} transition-transform duration-500 origin-left`}></div>
     </div>
   );
+  };
 
   const renderEventDetail = (event: Event) => (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -177,6 +188,22 @@ export function Events() {
             <p className="text-white/60 font-tech leading-relaxed border-l-2 border-racing-yellow/30 pl-6 py-2">
               {event.description || "Tato událost přinese napínavé souboje, kde se utkají nejlepší jezdci z celého regionu. Přijďte zažít adrenalinovou atmosféru, kde jedinou jistotou je prach a zvuk motorů."}
             </p>
+            {event.id === FEATURED_EVENT_ID && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-[#111] border border-white/10 p-4">
+                  <p className="font-tech text-[10px] text-white/40 uppercase tracking-widest">Místo</p>
+                  <p className="font-bebas text-2xl text-white mt-1">Vřesinská strž, Ostrava</p>
+                </div>
+                <div className="bg-[#111] border border-white/10 p-4">
+                  <p className="font-tech text-[10px] text-white/40 uppercase tracking-widest">Datum</p>
+                  <p className="font-bebas text-2xl text-white mt-1">4. dubna 2026</p>
+                </div>
+                <div className="bg-[#111] border border-white/10 p-4">
+                  <p className="font-tech text-[10px] text-white/40 uppercase tracking-widest">Status</p>
+                  <p className="font-bebas text-2xl text-racing-yellow mt-1">Registrace otevřena</p>
+                </div>
+              </div>
+            )}
           </section>
 
           {event.schedule && (
@@ -225,9 +252,14 @@ export function Events() {
               Hlavní cena pro vítěze této události je stanovena na <span className="font-bold text-black">{event.prize || "Pohár Vrakfestu"}</span>.
               Kdo ovládne Vřesinskou strž tentokrát?
             </p>
-            <Button className="w-full bg-black text-white hover:bg-white hover:text-black font-bebas text-xl tracking-widest h-14 uppercase transition-all">
-              BODOVÉ POŘADÍ
-            </Button>
+            <div className="space-y-3">
+              <Button asChild className="w-full bg-black text-white hover:bg-white hover:text-black font-bebas text-xl tracking-widest h-14 uppercase transition-all">
+                <a href="https://vrakfest.cz" target="_blank" rel="noreferrer">OFICIÁLNÍ WEB</a>
+              </Button>
+              <Button variant="outline" asChild className="w-full border-black/30 text-black hover:bg-black hover:text-white font-bebas text-xl tracking-widest h-12 uppercase">
+                <a href="https://vrakfest.cz" target="_blank" rel="noreferrer">PROPOZICE A PRAVIDLA</a>
+              </Button>
+            </div>
           </div>
 
           {/* Results Summary (if completed) */}

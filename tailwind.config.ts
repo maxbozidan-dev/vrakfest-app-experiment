@@ -21,7 +21,7 @@ export default {
 			fontFamily: {
 				sans: ['Inter', 'system-ui', 'sans-serif'],
 				mono: ['JetBrains Mono', 'Monaco', 'Consolas', 'monospace'],
-				bebas: ['"Bebas Neue"', 'sans-serif'],
+				bebas: ['Oswald', 'sans-serif'],
 				tech: ['"Space Mono"', 'monospace'],
 			},
 			colors: {

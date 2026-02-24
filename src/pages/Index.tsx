@@ -273,7 +273,7 @@ const Index = () => {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className={`h-screen w-full flex bg-[#050505] text-white overflow-hidden relative selection:bg-racing-yellow selection:text-black ${isPending ? 'opacity-80' : ''}`}>
+      <div className={`min-h-[100dvh] w-full flex bg-[#050505] text-white overflow-x-hidden relative selection:bg-racing-yellow selection:text-black ${isPending ? 'opacity-80' : ''}`}>
 
         {/* Global Background Elements */}
         <div className="fixed inset-0 z-0 pointer-events-none">
@@ -296,7 +296,7 @@ const Index = () => {
             currentInfo={tournament.isActive ? "PŘÍŠTÍ ZÁVOD ZA 15 MIN" : "PŘIPRAVUJEME DALŠÍ AKCI"}
           />
 
-          <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-10 custom-scrollbar">
+          <main className="flex-1 overflow-y-auto p-3 md:p-8 lg:p-10 custom-scrollbar">
             <div className="max-w-[1600px] mx-auto pb-20">
               {/* Content Container - Reduced duration and added key for smoother re-triggering of animations */}
               <div

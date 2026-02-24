@@ -23,12 +23,12 @@ export const DashboardHeader = memo(({
   onRoleChange
 }: DashboardHeaderProps) => {
   return (
-    <header className="h-20 flex items-center justify-between px-6 z-50 relative pointer-events-auto">
+    <header className="h-16 md:h-20 flex items-center justify-between px-3 md:px-6 z-50 relative pointer-events-auto">
       {/* HUD Top Bar Background */}
       <div className="absolute top-0 left-0 right-0 h-full bg-gradient-to-b from-black/80 to-transparent pointer-events-none"></div>
 
       <div className="flex items-center gap-6 z-10 w-full">
-        {/* SidebarTrigger removed for permanent sidebar */}
+        <SidebarTrigger className="md:hidden h-9 w-9 border border-racing-yellow/40 bg-black/60 text-racing-yellow hover:bg-racing-yellow hover:text-black" />
 
         {/* Dynamic Ticker HUD Element */}
         <div className="flex-1 hidden md:flex items-center">

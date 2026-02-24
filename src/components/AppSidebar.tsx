@@ -36,7 +36,7 @@ const menuItems = [
 ];
 
 export const AppSidebar = memo(({ activeTab, onTabChange }: AppSidebarProps) => {
-  const { state } = useSidebar();
+  const { state, isMobile, setOpenMobile } = useSidebar();
   const isCollapsed = state === 'collapsed';
   const { toast } = useToast();
   const [isEventSettingsOpen, setIsEventSettingsOpen] = useState(false);
@@ -64,14 +64,14 @@ export const AppSidebar = memo(({ activeTab, onTabChange }: AppSidebarProps) => 
 
 
   return (
-    <Sidebar className="border-none bg-transparent h-screen" collapsible="none" variant="sidebar">
+    <Sidebar className="border-none bg-transparent h-screen" collapsible="offcanvas" variant="sidebar">
       <SidebarContent className="bg-[#0a0a0a] border-r border-white/5 relative flex flex-col h-full">
         {/* Background Pattern */}
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 pointer-events-none"></div>
 
         {/* Header - Compact */}
         <div className="px-4 py-8 border-b border-white/5 flex justify-center">
-          <img src={assetUrl('/LOGO-short-Y.png')} alt="Vrakfest Logo" className="w-[160px] h-auto" />
+          <img src={assetUrl('/LOGO-short-Y.png')} alt="Vrakfest Logo" className="w-[130px] md:w-[160px] h-auto" />
         </div>
 
         {/* Navigation - Filling available space */}
@@ -143,7 +143,10 @@ export const AppSidebar = memo(({ activeTab, onTabChange }: AppSidebarProps) => 
                       </Dialog>
                     ) : (
                       <SidebarMenuButton
-                        onClick={() => onTabChange(item.id)}
+                        onClick={() => {
+                          onTabChange(item.id);
+                          if (isMobile) setOpenMobile(false);
+                        }}
                         className={`w-full group relative overflow-hidden transition-all duration-200 border border-transparent hover:border-racing-yellow/30 ${activeTab === item.id
                           ? 'bg-racing-yellow text-black font-bold'
                           : 'text-white/60 hover:text-white hover:bg-white/5'

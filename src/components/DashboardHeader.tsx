@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { assetUrl } from '@/lib/assetUrl';
 
 interface DashboardHeaderProps {
   racerCount: number;
@@ -27,8 +28,16 @@ export const DashboardHeader = memo(({
       {/* HUD Top Bar Background */}
       <div className="absolute top-0 left-0 right-0 h-full bg-gradient-to-b from-black/80 to-transparent pointer-events-none"></div>
 
-      <div className="flex items-center gap-6 z-10 w-full">
+      <div className="flex items-center gap-3 md:gap-6 z-10 w-full">
         <SidebarTrigger className="md:hidden h-9 w-9 border border-racing-yellow/40 bg-black/60 text-racing-yellow hover:bg-racing-yellow hover:text-black" />
+
+        <div className="md:hidden flex-1 flex justify-center">
+          <img
+            src={assetUrl('/media/logos/vrakfest-mobile-header.jpg')}
+            alt="Vrakfest"
+            className="h-8 w-auto object-contain"
+          />
+        </div>
 
         {/* Dynamic Ticker HUD Element */}
         <div className="flex-1 hidden md:flex items-center">
@@ -42,7 +51,7 @@ export const DashboardHeader = memo(({
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-4">
           <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
               <div className="text-white font-bebas tracking-wide leading-none text-lg">PROFIL JEZDCE</div>

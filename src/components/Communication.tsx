@@ -29,7 +29,11 @@ interface TempChannelSettings {
   writePermission: 'everyone' | 'organizers';
 }
 
-export function Communication() {
+interface CommunicationProps {
+  role?: 'administrator' | 'jezdec' | 'divak';
+}
+
+export function Communication({ role = 'divak' }: CommunicationProps) {
   const [channels, setChannels] = useState<ChatChannel[]>([]);
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
   const [showChannelSettings, setShowChannelSettings] = useState(false);
@@ -83,6 +87,8 @@ export function Communication() {
   }, [activeChannelId]);
 
   const activeChannel = channels.find(ch => ch.id === activeChannelId);
+  const canManageChannels = role === 'administrator';
+  const canWriteActiveChannel = !!activeChannel && (activeChannel.writePermission === 'everyone' || role === 'administrator');
 
   const handleCreateChannel = () => {
     const newChannel: ChatChannel = {
@@ -126,6 +132,7 @@ export function Communication() {
   };
 
   const handleOpenChannelSettings = (channelId?: string) => {
+    if (!canManageChannels) return;
     if (channelId) {
       const channel = channels.find(ch => ch.id === channelId);
       if (channel) {
@@ -167,12 +174,13 @@ export function Communication() {
   };
 
   const handleSendMessage = () => {
+    if (!canWriteActiveChannel) return;
     if (newMessage.trim() && activeChannel) {
       const message: Message = {
         id: Date.now().toString(),
         text: newMessage.trim(),
         timestamp: new Date(),
-        sender: 'Organizátor'
+        sender: role === 'administrator' ? 'Organizátor' : role === 'jezdec' ? 'Jezdec' : 'Divák'
       };
       
       setChannels(prev => 
@@ -262,9 +270,9 @@ export function Communication() {
             <Settings className="h-16 w-16 text-muted-foreground mx-auto" />
             <h2 className="text-xl font-semibold text-foreground">Vytvořte první komunikační kanál</h2>
             <p className="text-muted-foreground">Před zahájením komunikace vytvořte a nastavte kanál</p>
-            <Button onClick={() => handleOpenChannelSettings()} className="mt-4">
+            <Button onClick={() => handleOpenChannelSettings()} className="mt-4" disabled={!canManageChannels}>
               <Plus className="h-4 w-4 mr-2" />
-              Vytvořit kanál
+              {canManageChannels ? 'Vytvořit kanál' : 'Kanál vytvoří administrátor'}
             </Button>
           </div>
         </Card>
@@ -274,7 +282,7 @@ export function Communication() {
           <Card className="w-80 flex flex-col">
             <div className="p-4 border-b bg-card flex items-center justify-between">
               <h3 className="font-semibold text-foreground">Kanály</h3>
-              <Button variant="outline" size="sm" onClick={() => handleOpenChannelSettings()}>
+              <Button variant="outline" size="sm" onClick={() => handleOpenChannelSettings()} disabled={!canManageChannels}>
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
@@ -306,6 +314,7 @@ export function Communication() {
                           handleOpenChannelSettings(channel.id);
                         }}
                         className="w-6 h-6 p-0 hover:bg-primary/20"
+                        disabled={!canManageChannels}
                       >
                         <Edit3 className="w-3 h-3" />
                       </Button>
@@ -317,6 +326,7 @@ export function Communication() {
                           setDeleteChannelId(channel.id);
                         }}
                         className="w-6 h-6 p-0 hover:bg-destructive/20 hover:text-destructive"
+                        disabled={!canManageChannels}
                       >
                         <Trash2 className="w-3 h-3" />
                       </Button>
@@ -339,7 +349,7 @@ export function Communication() {
                       {activeChannel.writePermission === 'everyone' ? 'Všichni mohou psát' : 'Pouze organizátoři mohou psát'}
                     </p>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => handleOpenChannelSettings(activeChannel.id)}>
+                  <Button variant="outline" size="sm" onClick={() => handleOpenChannelSettings(activeChannel.id)} disabled={!canManageChannels}>
                     <Settings className="h-4 w-4" />
                   </Button>
                 </div>
@@ -365,6 +375,7 @@ export function Communication() {
                               size="sm"
                               onClick={() => handleEditMessage(message.id)}
                               className="w-6 h-6 p-0 hover:bg-primary/10"
+                              disabled={!canManageChannels}
                             >
                               <Edit3 className="w-3 h-3" />
                             </Button>
@@ -373,6 +384,7 @@ export function Communication() {
                               size="sm"
                               onClick={() => handleDeleteMessage(message.id)}
                               className="w-6 h-6 p-0 hover:bg-destructive/10 hover:text-destructive"
+                              disabled={!canManageChannels}
                             >
                               <Trash2 className="w-3 h-3" />
                             </Button>
@@ -418,11 +430,11 @@ export function Communication() {
                       onKeyPress={handleKeyPress}
                       placeholder={`Napište zprávu do ${activeChannel.name}...`}
                       className="flex-1"
-                      disabled={activeChannel.writePermission === 'organizers' && false} // Vždy povoleno pro demo
+                      disabled={!canWriteActiveChannel}
                     />
                     <Button
                       onClick={handleSendMessage}
-                      disabled={!newMessage.trim()}
+                      disabled={!newMessage.trim() || !canWriteActiveChannel}
                       size="icon"
                     >
                       <Send className="h-4 w-4" />

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback, useTransition } from 'react';
-import { BarChart3, Activity, ShoppingCart, User, BookOpen, Calendar, MessageSquare, Timer, Wifi, Zap } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useTransition } from 'react';
+import { BarChart3, Activity, ShoppingCart, User, BookOpen, Calendar, Timer, Wifi, Zap, ShieldAlert } from 'lucide-react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { DashboardHeader } from '@/components/DashboardHeader';
@@ -19,7 +19,10 @@ import { ActionLog } from '@/components/ActionLog';
 import { Marketplace } from '@/components/Marketplace';
 import { BannerSlideshow } from '@/components/BannerSlideshow';
 import { EventCountdown } from '@/components/EventCountdown';
+import { RoleSwitcher } from '@/components/RoleSwitcher';
 import { useRacingTournament } from '@/hooks/useRacingTournament';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { UserRole, canAccessModule, canEditRules, canModerateMarketplace } from '@/types/roles';
 import { Racer } from '@/types/racing';
 import { TournamentSettings, defaultTournamentSettings } from '@/types/tournamentSettings';
 
@@ -67,6 +70,7 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState('jezdci');
   const [isPending, startTransition] = useTransition();
   const [editingRacer, setEditingRacer] = useState<Racer | null>(null);
+  const [role, setRole] = useState<UserRole>('administrator');
 
   const {
     racers,
@@ -102,6 +106,12 @@ const Index = () => {
     window.addEventListener('redirectToTournament', handleRedirect);
     return () => window.removeEventListener('redirectToTournament', handleRedirect);
   }, []);
+
+  useEffect(() => {
+    if (!canAccessModule(role, activeTab as any)) {
+      setActiveTab('jezdci');
+    }
+  }, [role, activeTab]);
 
   const handleEditRacer = (racer: Racer) => {
     setEditingRacer(racer);
@@ -254,11 +264,20 @@ const Index = () => {
             onAddRacersToGroup={addRacersToGroup}
             onSwitchToControl={handleViewControl}
             onAddRacerToTournament={handleAddRacerToTournament}
-            viewOnly={true} // New prop for driver view
+            viewOnly={role !== 'administrator'}
           />
         );
 
       case 'kontrola':
+        if (role !== 'administrator') {
+          return (
+            <Alert className="border-racing-yellow/30 bg-black/50 rounded-none">
+              <ShieldAlert className="h-4 w-4 text-racing-yellow" />
+              <AlertTitle>Přístup odepřen</AlertTitle>
+              <AlertDescription>Živé řízení závodu je dostupné pouze pro administrátora.</AlertDescription>
+            </Alert>
+          );
+        }
         return (
           <RaceControl
             currentGroup={currentRaceGroup}
@@ -295,19 +314,43 @@ const Index = () => {
         return <Events />;
 
       case 'komunikace':
-        return <Communication />;
+        return <Communication role={role} />;
 
       case 'pravidla':
-        return <RaceRules />;
+        return <RaceRules canEdit={canEditRules(role)} />;
 
       case 'log-akci':
         return <ActionLog />;
 
       case 'bazar':
-        return <Marketplace />;
+        return <Marketplace canModerate={canModerateMarketplace(role)} />;
 
       case 'hlasovani':
-        return <Voting />;
+        return <Voting role={role} currentRacerName={racers[0] ? `${racers[0].firstName} ${racers[0].lastName}` : undefined} />;
+
+      case 'settings':
+        if (role !== 'administrator') {
+          return null;
+        }
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-[#111] border border-white/10 p-5">
+              <p className="font-tech text-[10px] uppercase tracking-widest text-white/50">Race Safety</p>
+              <p className="font-bebas text-3xl text-racing-yellow mt-2">AUTO-BLOKACE AKCÍ</p>
+              <p className="text-white/60 text-sm mt-2">Systém zablokuje nevalidní kroky během živého kola (dokončení při boudě, duplicitní finiš, neplatné bodování).</p>
+            </div>
+            <div className="bg-[#111] border border-white/10 p-5">
+              <p className="font-tech text-[10px] uppercase tracking-widest text-white/50">Komunikace</p>
+              <p className="font-bebas text-3xl text-racing-yellow mt-2">KANÁLY & OPRÁVNĚNÍ</p>
+              <p className="text-white/60 text-sm mt-2">Pouze administrátor spravuje kanály, jezdec/divák respektují write-policy kanálu.</p>
+            </div>
+            <div className="bg-[#111] border border-white/10 p-5">
+              <p className="font-tech text-[10px] uppercase tracking-widest text-white/50">Publikace</p>
+              <p className="font-bebas text-3xl text-racing-yellow mt-2">GITHUB PAGES READY</p>
+              <p className="text-white/60 text-sm mt-2">Build je připraven pro deployment pod /vrakfest-app-experiment/.</p>
+            </div>
+          </div>
+        );
 
       default:
         return null;
@@ -315,6 +358,7 @@ const Index = () => {
   };
 
   const handleTabChange = (tab: string) => {
+    if (!canAccessModule(role, tab as any)) return;
     startTransition(() => {
       setActiveTab(tab);
     });
@@ -335,6 +379,7 @@ const Index = () => {
         <AppSidebar
           activeTab={activeTab}
           onTabChange={handleTabChange}
+          role={role}
         />
 
         <div className="flex-1 flex flex-col min-w-0 bg-transparent relative z-10 overflow-hidden">
@@ -344,11 +389,30 @@ const Index = () => {
             onReset={resetTournament}
             onLogoClick={() => handleTabChange('jezdci')}
             currentInfo={tournament.isActive ? "PŘÍŠTÍ ZÁVOD ZA 15 MIN" : "PŘIPRAVUJEME DALŠÍ AKCI"}
+            userRole={role}
           />
 
           <main className="flex-1 overflow-y-auto px-3 pb-3 pt-2 md:p-8 lg:p-10 custom-scrollbar">
-            <div className="max-w-[1600px] mx-auto pb-20">
-              {/* Content Container - Reduced duration and added key for smoother re-triggering of animations */}
+            <div className="max-w-[1600px] mx-auto pb-20 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <RoleSwitcher role={role} onChange={setRole} />
+                {role !== 'administrator' && (
+                  <div className="font-tech text-[10px] uppercase tracking-[0.18em] text-white/50">
+                    Demo mód role • oprávnění jsou omezená
+                  </div>
+                )}
+              </div>
+
+              {!canAccessModule(role, activeTab as any) && (
+                <Alert className="border-racing-yellow/30 bg-black/50 rounded-none">
+                  <ShieldAlert className="h-4 w-4 text-racing-yellow" />
+                  <AlertTitle>Omezený přístup</AlertTitle>
+                  <AlertDescription>
+                    Tato sekce je dostupná pouze pro administrátora.
+                  </AlertDescription>
+                </Alert>
+              )}
+
               <div
                 key={activeTab}
                 className="relative animate-in fade-in slide-in-from-bottom-2 duration-300 ease-out"

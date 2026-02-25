@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { Bell, Menu, User } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 import { assetUrl } from '@/lib/assetUrl';
+import { UserRole, roleLabels } from '@/types/roles';
 
 interface DashboardHeaderProps {
   racerCount: number;
@@ -9,8 +10,7 @@ interface DashboardHeaderProps {
   onReset: () => void;
   onLogoClick?: () => void;
   currentInfo?: string; // Pro zobrazení aktuálních informací
-  userRole?: 'admin' | 'user';
-  onRoleChange?: (role: 'admin' | 'user') => void;
+  userRole?: UserRole;
 }
 
 export const DashboardHeader = memo(({
@@ -19,8 +19,7 @@ export const DashboardHeader = memo(({
   onReset,
   onLogoClick,
   currentInfo = "Vítejte v závodní aplikaci",
-  userRole = 'admin',
-  onRoleChange
+  userRole = 'administrator'
 }: DashboardHeaderProps) => {
   const { toggleSidebar } = useSidebar();
 
@@ -76,8 +75,8 @@ export const DashboardHeader = memo(({
         <div className="hidden md:flex items-center gap-4">
           <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
-              <div className="text-white font-bebas tracking-wide leading-none text-lg">PROFIL JEZDCE</div>
-              <div className="text-racing-yellow font-tech text-[10px] tracking-widest uppercase">Úroveň přístupu 5</div>
+              <div className="text-white font-bebas tracking-wide leading-none text-lg">{roleLabels[userRole]}</div>
+              <div className="text-racing-yellow font-tech text-[10px] tracking-widest uppercase">Úroveň přístupu {userRole === 'administrator' ? '5' : userRole === 'jezdec' ? '3' : '1'}</div>
             </div>
             <div className="w-10 h-10 bg-racing-yellow flex items-center justify-center border-2 border-white/10">
               <User className="h-5 w-5 text-black" />

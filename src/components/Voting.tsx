@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Trophy, ThumbsUp, Medal, Flame } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { assetUrl } from '@/lib/assetUrl';
+import { UserRole } from '@/types/roles';
 
 interface PollOption {
     id: string;
@@ -12,6 +13,7 @@ interface PollOption {
     vehicle: string;
     image: string;
     votes: number;
+    racerId?: string;
 }
 
 interface Poll {
@@ -46,17 +48,42 @@ const mockPolls: Poll[] = [
     }
 ];
 
-export function Voting() {
+interface VotingProps {
+    role?: UserRole;
+    currentRacerName?: string;
+}
+
+export function Voting({ role = 'divak', currentRacerName }: VotingProps) {
     const [polls, setPolls] = useState<Poll[]>(mockPolls);
     const [votedPolls, setVotedPolls] = useState<string[]>([]);
     const { toast } = useToast();
 
     const handleVote = (pollId: string, optionId: string) => {
+        if (role === 'administrator') {
+            toast({
+                title: 'Admin mód',
+                description: 'Administrátor nemůže hlasovat, jen spravuje ankety.',
+                variant: 'destructive'
+            });
+            return;
+        }
+
         if (votedPolls.includes(pollId)) {
             toast({
                 title: "Už jste hlasovali",
                 description: "V této anketě můžete hlasovat pouze jednou.",
                 variant: "destructive"
+            });
+            return;
+        }
+
+        const poll = polls.find(p => p.id === pollId);
+        const option = poll?.options.find(o => o.id === optionId);
+        if (role === 'jezdec' && currentRacerName && option?.name === currentRacerName) {
+            toast({
+                title: 'Neplatná akce',
+                description: 'Jezdec nemůže hlasovat sám pro sebe.',
+                variant: 'destructive'
             });
             return;
         }
@@ -149,13 +176,13 @@ export function Voting() {
 
                                                 <Button
                                                     onClick={() => handleVote(poll.id, option.id)}
-                                                    disabled={hasVoted}
-                                                    className={`w-full font-bebas tracking-widest text-lg py-6 transition-all duration-300 ${hasVoted
+                                                    disabled={hasVoted || role === 'administrator'}
+                                                    className={`w-full font-bebas tracking-widest text-lg py-6 transition-all duration-300 ${(hasVoted || role === 'administrator')
                                                         ? 'bg-white/5 text-white/20 border-white/5'
                                                         : 'bg-racing-yellow text-black hover:bg-white border-none shadow-[0_0_15px_rgba(255,184,0,0.3)]'
                                                         }`}
                                                 >
-                                                    {hasVoted ? 'ODHLASOVÁNO' : (
+                                                    {role === 'administrator' ? 'SPRÁVA ANKET' : hasVoted ? 'ODHLASOVÁNO' : (
                                                         <span className="flex items-center gap-2">
                                                             <ThumbsUp className="w-4 h-4" />
                                                             HLASOVAT

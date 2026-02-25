@@ -17,10 +17,12 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { assetUrl } from '@/lib/assetUrl';
+import { canAccessModule } from '@/types/roles';
 
 interface AppSidebarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  role: 'administrator' | 'jezdec' | 'divak';
 }
 
 const menuItems = [
@@ -35,7 +37,7 @@ const menuItems = [
   { id: 'settings', label: 'Nastavení', icon: Settings },
 ];
 
-export const AppSidebar = memo(({ activeTab, onTabChange }: AppSidebarProps) => {
+export const AppSidebar = memo(({ activeTab, onTabChange, role }: AppSidebarProps) => {
   const { state, isMobile, setOpenMobile } = useSidebar();
   const isCollapsed = state === 'collapsed';
   const { toast } = useToast();
@@ -61,6 +63,8 @@ export const AppSidebar = memo(({ activeTab, onTabChange }: AppSidebarProps) => 
     });
   };
 
+  const visibleMenuItems = menuItems.filter(item => canAccessModule(role, item.id as any) || item.id !== 'settings');
+
 
 
   return (
@@ -80,7 +84,7 @@ export const AppSidebar = memo(({ activeTab, onTabChange }: AppSidebarProps) => 
             {!isCollapsed && <SidebarGroupLabel className="font-tech text-racing-yellow px-4 text-[9px] tracking-[0.15em] uppercase mb-1 opacity-70">Hlavní Menu</SidebarGroupLabel>}
             <SidebarGroupContent className="px-2">
               <SidebarMenu className="space-y-0.5">
-                {menuItems.map((item) => (
+                {visibleMenuItems.map((item) => (
                   <SidebarMenuItem key={item.id}>
                     {item.id === 'settings' ? (
                       <Dialog open={isEventSettingsOpen} onOpenChange={setIsEventSettingsOpen}>

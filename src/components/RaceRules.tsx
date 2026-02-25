@@ -26,7 +26,11 @@ interface RuleBlock {
   };
 }
 
-export function RaceRules() {
+interface RaceRulesProps {
+  canEdit?: boolean;
+}
+
+export function RaceRules({ canEdit = false }: RaceRulesProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [rules, setRules] = useState<RuleBlock[]>([]);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
@@ -173,6 +177,12 @@ export function RaceRules() {
 
   const selectedBlock = selectedBlockId ? rules.find(r => r.id === selectedBlockId) : null;
 
+  useEffect(() => {
+    if (!canEdit && isEditing) {
+      setIsEditing(false);
+    }
+  }, [canEdit, isEditing]);
+
   return (
     <div className="h-full flex flex-col bg-background">
       {/* Header */}
@@ -184,6 +194,7 @@ export function RaceRules() {
         <Button
           onClick={isEditing ? saveRules : () => setIsEditing(true)}
           className={isEditing ? "bg-green-600 hover:bg-green-700" : ""}
+          disabled={!canEdit && !isEditing}
         >
           {isEditing ? (
             <>
@@ -193,7 +204,7 @@ export function RaceRules() {
           ) : (
             <>
               <Edit3 className="w-4 h-4 mr-2" />
-              Upravit dokument
+              {canEdit ? 'Upravit dokument' : 'Pouze pro čtení'}
             </>
           )}
         </Button>

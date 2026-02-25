@@ -31,9 +31,10 @@ interface MarketplaceItemCardProps {
   item: MarketplaceItem;
   onEdit: (item: MarketplaceItem) => void;
   onDelete: (id: string) => void;
+  canModerate?: boolean;
 }
 
-function MarketplaceCard({ item, onEdit, onDelete }: MarketplaceItemCardProps) {
+function MarketplaceCard({ item, onEdit, onDelete, canModerate = false }: MarketplaceItemCardProps) {
   return (
     <Card className="racing-card overflow-hidden group hover:border-racing-yellow/30 transition-all duration-300">
       {/* Hero Image Area */}
@@ -61,14 +62,16 @@ function MarketplaceCard({ item, onEdit, onDelete }: MarketplaceItemCardProps) {
         </div>
 
         {/* Action Buttons Overlay */}
-        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button size="icon" variant="secondary" className="w-8 h-8 rounded-none bg-black/80 hover:bg-racing-yellow hover:text-black border border-white/10" onClick={() => onEdit(item)}>
-            <Edit className="w-4 h-4" />
-          </Button>
-          <Button size="icon" variant="destructive" className="w-8 h-8 rounded-none bg-red-600/80 hover:bg-red-600 border border-white/10" onClick={() => onDelete(item.id)}>
-            <Trash2 className="w-4 h-4" />
-          </Button>
-        </div>
+        {canModerate && (
+          <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button size="icon" variant="secondary" className="w-8 h-8 rounded-none bg-black/80 hover:bg-racing-yellow hover:text-black border border-white/10" onClick={() => onEdit(item)}>
+              <Edit className="w-4 h-4" />
+            </Button>
+            <Button size="icon" variant="destructive" className="w-8 h-8 rounded-none bg-red-600/80 hover:bg-red-600 border border-white/10" onClick={() => onDelete(item.id)}>
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
 
         {/* Price Tag Overlay */}
         {item.price > 0 && (
@@ -113,7 +116,11 @@ interface Category {
   createdAt: Date;
 }
 
-export function Marketplace() {
+interface MarketplaceProps {
+  canModerate?: boolean;
+}
+
+export function Marketplace({ canModerate = false }: MarketplaceProps) {
   const [items, setItems] = useState<MarketplaceItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([
     { id: '1', name: 'Auta', createdAt: new Date() },
@@ -379,34 +386,36 @@ export function Marketplace() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold racing-gradient-text">Obchod</h1>
         <div className="flex gap-2">
-          <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Settings className="w-4 h-4 mr-2" />
-                Kategorie
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="racing-card">
-              <DialogHeader>
-                <DialogTitle className="racing-gradient-text">Přidat kategorii</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="newCategory">Název kategorie</Label>
-                  <Input
-                    id="newCategory"
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                    className="racing-input"
-                    placeholder="Zadejte název kategorie..."
-                  />
-                </div>
-                <Button onClick={addCategory} className="racing-btn-primary">
-                  Přidat
+          {canModerate && (
+            <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Kategorie
                 </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent className="racing-card">
+                <DialogHeader>
+                  <DialogTitle className="racing-gradient-text">Přidat kategorii</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="newCategory">Název kategorie</Label>
+                    <Input
+                      id="newCategory"
+                      value={newCategory}
+                      onChange={(e) => setNewCategory(e.target.value)}
+                      className="racing-input"
+                      placeholder="Zadejte název kategorie..."
+                    />
+                  </div>
+                  <Button onClick={addCategory} className="racing-btn-primary">
+                    Přidat
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
 
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
@@ -596,6 +605,7 @@ export function Marketplace() {
                   item={item}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
+                  canModerate={canModerate}
                 />
               ))
             )}
@@ -610,6 +620,7 @@ export function Marketplace() {
                 item={item}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                canModerate={canModerate}
               />
             ))}
           </div>
@@ -623,6 +634,7 @@ export function Marketplace() {
                 item={item}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                canModerate={canModerate}
               />
             ))}
           </div>

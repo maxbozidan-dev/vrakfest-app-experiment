@@ -28,6 +28,7 @@ interface AppSidebarProps {
 const menuItems = [
   { id: 'jezdci', label: 'Nástěnka', icon: Home },
   { id: 'turnaj', label: 'Program závodu', icon: Users },
+  { id: 'zavod', label: 'Závod', icon: Car },
   { id: 'bodove-poradei', label: 'Bodové pořadí', icon: BarChart3 },
   { id: 'udalosti', label: 'Kalendář akcí', icon: Calendar },
   { id: 'hlasovani', label: 'Hlasování', icon: Activity },
@@ -63,7 +64,7 @@ export const AppSidebar = memo(({ activeTab, onTabChange, role }: AppSidebarProp
     });
   };
 
-  const visibleMenuItems = menuItems.filter(item => canAccessModule(role, item.id as any) || item.id !== 'settings');
+  const visibleMenuItems = menuItems.filter(item => canAccessModule(role, item.id as any));
 
 
 

@@ -3,6 +3,7 @@ export type UserRole = 'administrator' | 'jezdec' | 'divak';
 export type AppModule =
   | 'jezdci'
   | 'turnaj'
+  | 'zavod'
   | 'kontrola'
   | 'bodove-poradei'
   | 'statistiky'
@@ -19,7 +20,7 @@ export const roleLabels: Record<UserRole, string> = {
   divak: 'Divák'
 };
 
-const adminOnly: AppModule[] = ['kontrola', 'settings'];
+const adminOnly: AppModule[] = ['zavod', 'kontrola', 'settings'];
 const readOnlyForNonAdmin: AppModule[] = ['pravidla'];
 
 export const canAccessModule = (role: UserRole, module: AppModule) => {

@@ -20,6 +20,7 @@ import { Marketplace } from '@/components/Marketplace';
 import { BannerSlideshow } from '@/components/BannerSlideshow';
 import { EventCountdown } from '@/components/EventCountdown';
 import { RoleSwitcher } from '@/components/RoleSwitcher';
+import { RaceSetup } from '@/components/RaceSetup';
 import { useRacingTournament } from '@/hooks/useRacingTournament';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { UserRole, canAccessModule, canEditRules, canModerateMarketplace } from '@/types/roles';
@@ -267,6 +268,18 @@ const Index = () => {
             viewOnly={role !== 'administrator'}
           />
         );
+
+      case 'zavod':
+        if (role !== 'administrator') {
+          return (
+            <Alert className="border-racing-yellow/30 bg-black/50 rounded-none">
+              <ShieldAlert className="h-4 w-4 text-racing-yellow" />
+              <AlertTitle>Přístup odepřen</AlertTitle>
+              <AlertDescription>Nastavení závodu je dostupné pouze pro administrátora.</AlertDescription>
+            </Alert>
+          );
+        }
+        return <RaceSetup />;
 
       case 'kontrola':
         if (role !== 'administrator') {

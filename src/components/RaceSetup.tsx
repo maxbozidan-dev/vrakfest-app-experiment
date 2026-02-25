@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { CalendarDays, MapPin, PlayCircle, Save, Settings2 } from 'lucide-react';
+import { CalendarDays, CircleCheck, CircleDashed, Flag, MapPin, PlayCircle, Save, Settings2, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -38,6 +38,19 @@ interface RaceSetupProps {
   onReady?: (config: RaceSetupConfig) => void;
 }
 
+const raceTypeLabel: Record<RaceSetupConfig['raceType'], string> = {
+  rozjizdky: 'Rozjížďky',
+  'hlavni-zavod': 'Hlavní závod',
+  special: 'Speciál / show'
+};
+
+const categoryLabel: Record<RaceSetupConfig['category'], string> = {
+  all: 'Všechny',
+  'do-16': 'Do 1.6',
+  'nad-16': 'Nad 1.6',
+  zeny: 'Ženy'
+};
+
 export function RaceSetup({ onReady }: RaceSetupProps) {
   const { toast } = useToast();
   const [config, setConfig] = useState<RaceSetupConfig>(() => {
@@ -50,9 +63,19 @@ export function RaceSetup({ onReady }: RaceSetupProps) {
     }
   });
 
-  const isValid = useMemo(() => {
-    return Boolean(config.eventName.trim()) && Boolean(config.location.trim()) && config.rounds >= 1 && config.groupSize >= 3;
+  const completion = useMemo(() => {
+    const checks = [
+      Boolean(config.eventName.trim()),
+      Boolean(config.location.trim()),
+      Boolean(config.eventDate),
+      config.rounds >= 1,
+      config.groupSize >= 3
+    ];
+    const done = checks.filter(Boolean).length;
+    return Math.round((done / checks.length) * 100);
   }, [config]);
+
+  const isValid = completion === 100;
 
   const update = <K extends keyof RaceSetupConfig>(key: K, value: RaceSetupConfig[K]) => {
     setConfig(prev => ({ ...prev, [key]: value }));
@@ -74,7 +97,7 @@ export function RaceSetup({ onReady }: RaceSetupProps) {
     if (!isValid) {
       toast({
         title: 'Chybí údaje',
-        description: 'Doplň název akce, místo, počet kol a validní velikost skupiny.',
+        description: 'Doplň název akce, místo, datum, počet kol a validní velikost skupiny.',
         variant: 'destructive'
       });
       return;
@@ -87,107 +110,139 @@ export function RaceSetup({ onReady }: RaceSetupProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/10 pb-5">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 border-b border-white/10 pb-5">
         <div>
-          <p className="font-tech text-[10px] uppercase tracking-[0.22em] text-racing-yellow">Administrátor • Krok 1</p>
+          <p className="font-tech text-[10px] uppercase tracking-[0.22em] text-racing-yellow">Administrátor • Závod • Krok 1/2</p>
           <h1 className="font-bebas text-4xl md:text-5xl tracking-wider text-white leading-none">Nastavení závodu</h1>
-          <p className="text-white/50 text-sm mt-2">Nakonfiguruj akci, parametry jízd a připrav závodní den.</p>
+          <p className="text-white/50 text-sm mt-2">Nakonfiguruj akci, parametry jízd a připrav závodní den. UX je optimalizované pro rychlou práci na mobilu i desktopu.</p>
         </div>
-        <div className="bg-[#111] border border-white/10 px-4 py-3">
+
+        <div className="bg-[#111] border border-white/10 px-4 py-3 min-w-[220px]">
           <p className="font-tech text-[10px] uppercase tracking-widest text-white/40">Stav konfigurace</p>
-          <p className={`font-bebas text-2xl tracking-wide ${config.status === 'ready' ? 'text-racing-yellow' : 'text-white'}`}>
-            {config.status === 'ready' ? 'PŘIPRAVENO' : 'DRAFT'}
-          </p>
+          <div className="flex items-center justify-between mt-1">
+            <p className={`font-bebas text-2xl tracking-wide ${config.status === 'ready' ? 'text-racing-yellow' : 'text-white'}`}>
+              {config.status === 'ready' ? 'PŘIPRAVENO' : 'DRAFT'}
+            </p>
+            <span className="font-tech text-xs text-white/60">{completion}%</span>
+          </div>
+          <div className="mt-2 h-1.5 bg-black/60 border border-white/10">
+            <div className="h-full bg-racing-yellow transition-all" style={{ width: `${completion}%` }} />
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2 bg-[#111] border border-white/10 p-5 md:p-6 space-y-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label className="text-white/70 font-tech uppercase text-xs tracking-widest">Název události</Label>
-              <Input value={config.eventName} onChange={(e) => update('eventName', e.target.value)} className="mt-2 bg-black/60 border-white/20" />
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+        <div className="xl:col-span-2 space-y-5">
+          <section className="bg-[#111] border border-white/10 p-5 md:p-6 space-y-4">
+            <div className="flex items-center gap-2 text-racing-yellow">
+              <CalendarDays className="w-4 h-4" />
+              <h3 className="font-bebas text-2xl tracking-wide">Základní informace</h3>
             </div>
-            <div>
-              <Label className="text-white/70 font-tech uppercase text-xs tracking-widest">Místo</Label>
-              <Input value={config.location} onChange={(e) => update('location', e.target.value)} className="mt-2 bg-black/60 border-white/20" />
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label className="text-white/70 font-tech uppercase text-xs tracking-widest">Datum</Label>
-              <Input type="date" value={config.eventDate} onChange={(e) => update('eventDate', e.target.value)} className="mt-2 bg-black/60 border-white/20" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-white/70 font-tech uppercase text-xs tracking-widest">Název události</Label>
+                <Input value={config.eventName} onChange={(e) => update('eventName', e.target.value)} className="mt-2 bg-black/60 border-white/20 min-h-11" />
+              </div>
+              <div>
+                <Label className="text-white/70 font-tech uppercase text-xs tracking-widest">Místo</Label>
+                <Input value={config.location} onChange={(e) => update('location', e.target.value)} className="mt-2 bg-black/60 border-white/20 min-h-11" />
+              </div>
             </div>
-            <div>
-              <Label className="text-white/70 font-tech uppercase text-xs tracking-widest">Typ závodu</Label>
-              <Select value={config.raceType} onValueChange={(v: RaceSetupConfig['raceType']) => update('raceType', v)}>
-                <SelectTrigger className="mt-2 bg-black/60 border-white/20"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="rozjizdky">Rozjížďky</SelectItem>
-                  <SelectItem value="hlavni-zavod">Hlavní závod</SelectItem>
-                  <SelectItem value="special">Speciál / show</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-white/70 font-tech uppercase text-xs tracking-widest">Kategorie</Label>
-              <Select value={config.category} onValueChange={(v: RaceSetupConfig['category']) => update('category', v)}>
-                <SelectTrigger className="mt-2 bg-black/60 border-white/20"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Všechny</SelectItem>
-                  <SelectItem value="do-16">Do 1.6</SelectItem>
-                  <SelectItem value="nad-16">Nad 1.6</SelectItem>
-                  <SelectItem value="zeny">Ženy</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label className="text-white/70 font-tech uppercase text-xs tracking-widest">Počet kol</Label>
-              <Input type="number" min={1} max={20} value={config.rounds} onChange={(e) => update('rounds', Number(e.target.value || 1))} className="mt-2 bg-black/60 border-white/20" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label className="text-white/70 font-tech uppercase text-xs tracking-widest">Datum</Label>
+                <Input type="date" value={config.eventDate} onChange={(e) => update('eventDate', e.target.value)} className="mt-2 bg-black/60 border-white/20 min-h-11" />
+              </div>
+              <div>
+                <Label className="text-white/70 font-tech uppercase text-xs tracking-widest">Typ závodu</Label>
+                <Select value={config.raceType} onValueChange={(v: RaceSetupConfig['raceType']) => update('raceType', v)}>
+                  <SelectTrigger className="mt-2 bg-black/60 border-white/20 min-h-11"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="rozjizdky">Rozjížďky</SelectItem>
+                    <SelectItem value="hlavni-zavod">Hlavní závod</SelectItem>
+                    <SelectItem value="special">Speciál / show</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-white/70 font-tech uppercase text-xs tracking-widest">Kategorie</Label>
+                <Select value={config.category} onValueChange={(v: RaceSetupConfig['category']) => update('category', v)}>
+                  <SelectTrigger className="mt-2 bg-black/60 border-white/20 min-h-11"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Všechny</SelectItem>
+                    <SelectItem value="do-16">Do 1.6</SelectItem>
+                    <SelectItem value="nad-16">Nad 1.6</SelectItem>
+                    <SelectItem value="zeny">Ženy</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div>
-              <Label className="text-white/70 font-tech uppercase text-xs tracking-widest">Skupiny</Label>
-              <Select value={config.groupMode} onValueChange={(v: RaceSetupConfig['groupMode']) => update('groupMode', v)}>
-                <SelectTrigger className="mt-2 bg-black/60 border-white/20"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="auto">Automatický návrh</SelectItem>
-                  <SelectItem value="manual">Manuální nastavení</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-white/70 font-tech uppercase text-xs tracking-widest">Jezdců ve skupině</Label>
-              <Input type="number" min={3} max={12} value={config.groupSize} onChange={(e) => update('groupSize', Number(e.target.value || 6))} className="mt-2 bg-black/60 border-white/20" />
-            </div>
-          </div>
+          </section>
 
-          <div className="flex flex-wrap gap-3 pt-2">
+          <section className="bg-[#111] border border-white/10 p-5 md:p-6 space-y-4">
+            <div className="flex items-center gap-2 text-racing-yellow">
+              <Users className="w-4 h-4" />
+              <h3 className="font-bebas text-2xl tracking-wide">Parametry jízd</h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label className="text-white/70 font-tech uppercase text-xs tracking-widest">Počet kol</Label>
+                <Input type="number" min={1} max={20} value={config.rounds} onChange={(e) => update('rounds', Number(e.target.value || 1))} className="mt-2 bg-black/60 border-white/20 min-h-11" />
+              </div>
+              <div>
+                <Label className="text-white/70 font-tech uppercase text-xs tracking-widest">Skupiny</Label>
+                <Select value={config.groupMode} onValueChange={(v: RaceSetupConfig['groupMode']) => update('groupMode', v)}>
+                  <SelectTrigger className="mt-2 bg-black/60 border-white/20 min-h-11"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="auto">Automatický návrh</SelectItem>
+                    <SelectItem value="manual">Manuální nastavení</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-white/70 font-tech uppercase text-xs tracking-widest">Jezdců ve skupině</Label>
+                <Input type="number" min={3} max={12} value={config.groupSize} onChange={(e) => update('groupSize', Number(e.target.value || 6))} className="mt-2 bg-black/60 border-white/20 min-h-11" />
+              </div>
+            </div>
+          </section>
+
+          <div className="sticky bottom-2 bg-[#0e0e0e]/95 backdrop-blur border border-white/10 p-3 md:p-4 flex flex-wrap items-center gap-3 z-20">
             <Button onClick={saveDraft} variant="outline" className="min-h-11">
               <Save className="w-4 h-4" /> Uložit draft
             </Button>
             <Button onClick={prepareRace} className="min-h-11">
               <PlayCircle className="w-4 h-4" /> Připravit závod
             </Button>
+            <span className="font-tech text-[10px] uppercase tracking-widest text-white/50">Po potvrzení pokračuješ krokem 2: nahrání jezdců</span>
           </div>
         </div>
 
-        <div className="bg-[#111] border border-white/10 p-5 space-y-4">
-          <h3 className="font-bebas text-3xl text-white tracking-wide">Souhrn</h3>
-          <div className="space-y-3 text-sm">
-            <div className="flex items-start gap-2 text-white/70"><CalendarDays className="w-4 h-4 mt-0.5 text-racing-yellow" /><span>{config.eventDate}</span></div>
-            <div className="flex items-start gap-2 text-white/70"><MapPin className="w-4 h-4 mt-0.5 text-racing-yellow" /><span>{config.location}</span></div>
-            <div className="flex items-start gap-2 text-white/70"><Settings2 className="w-4 h-4 mt-0.5 text-racing-yellow" /><span>{config.rounds} kol • {config.groupSize} jezdců/skupina</span></div>
+        <aside className="space-y-4 xl:sticky xl:top-4">
+          <div className="bg-[#111] border border-white/10 p-5 space-y-4">
+            <h3 className="font-bebas text-3xl text-white tracking-wide">Souhrn</h3>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-start gap-2 text-white/70"><CalendarDays className="w-4 h-4 mt-0.5 text-racing-yellow" /><span>{config.eventDate}</span></div>
+              <div className="flex items-start gap-2 text-white/70"><MapPin className="w-4 h-4 mt-0.5 text-racing-yellow" /><span>{config.location}</span></div>
+              <div className="flex items-start gap-2 text-white/70"><Settings2 className="w-4 h-4 mt-0.5 text-racing-yellow" /><span>{config.rounds} kol • {config.groupSize} jezdců/skupina</span></div>
+              <div className="flex items-start gap-2 text-white/70"><Flag className="w-4 h-4 mt-0.5 text-racing-yellow" /><span>{raceTypeLabel[config.raceType]} • {categoryLabel[config.category]}</span></div>
+            </div>
           </div>
 
-          <div className="border-t border-white/10 pt-4">
-            <p className="font-tech text-[10px] uppercase tracking-widest text-white/40">Další krok</p>
-            <p className="text-white/70 mt-2 text-sm">Nahraj registrované jezdce do závodu a nech vygenerovat skupiny.</p>
+          <div className="bg-[#111] border border-white/10 p-5 space-y-3">
+            <p className="font-tech text-[10px] uppercase tracking-widest text-white/40">Kontrola připravenosti</p>
+            <div className="flex items-center gap-2 text-sm text-white/70">
+              {isValid ? <CircleCheck className="w-4 h-4 text-racing-yellow" /> : <CircleDashed className="w-4 h-4 text-white/40" />}
+              <span>{isValid ? 'Všechny povinné údaje jsou vyplněné' : 'Chybí některé povinné údaje'}</span>
+            </div>
+            <div className="border-t border-white/10 pt-3">
+              <p className="font-tech text-[10px] uppercase tracking-widest text-white/40">Další krok</p>
+              <p className="text-white/70 mt-2 text-sm">Nahraj registrované jezdce do závodu a nech vygenerovat skupiny.</p>
+            </div>
           </div>
-        </div>
+        </aside>
       </div>
     </div>
   );
